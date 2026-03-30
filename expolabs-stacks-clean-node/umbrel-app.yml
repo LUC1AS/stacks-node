@@ -1,0 +1,37 @@
+manifestVersion: 1.1
+
+id: expolabs-stacks-clean-node
+category: bitcoin
+name: Stacks Clean Node
+version: "3.4.0.0.0"
+tagline: Run a Stacks mainnet node backed by your Umbrel Bitcoin node
+description: >-
+  A clean-room, MIT-licensed Stacks mainnet follower node that reuses your
+  Umbrel Bitcoin node as the burnchain backend — no extra Bitcoin node
+  required. Built from scratch against upstream Stacks and Umbrel
+  documentation for a sleek, minimal, and maintainable baseline.
+
+
+  Built to replace patchy community setups and eventually be proposed for the
+  official Umbrel app ecosystem.
+
+website: https://stacks.co
+support: https://github.com/LUC1AS/stacks-node/issues
+repo: https://github.com/LUC1AS/stacks-node
+submitter: Expolabs
+submission: https://github.com/LUC1AS/stacks-node
+
+port: 21443
+
+gallery: []
+
+releaseNotes: >-
+  Upgraded to Stacks Core 3.4.0.0.0 (epoch 3.4 hard fork, activates at Bitcoin
+  block 943333, ~April 2 2026). This is a required upgrade — nodes below 3.4.x
+  will stop following the chain at activation. Chainstate from 3.3.x is fully
+  compatible; genesis sync only required if upgrading from 3.2.x or earlier.
+
+dependencies:
+  - bitcoin
+
+developer: Hiro Systems / Stacks Foundation
