@@ -11,8 +11,8 @@ An Umbrel community app that runs a **Stacks mainnet follower node**, anchored t
 ## Features
 
 - **No extra Bitcoin node needed** — reuses your existing Umbrel Bitcoin app
-- **Official image** — `ghcr.io/stacks-network/stacks-core:3.3.0.0.5`
-- **Quick Sync** — on first install, automatically downloads and extracts the latest Hiro mainnet snapshot so your node is ready in minutes instead of days
+- **Official image** — `ghcr.io/stacks-network/stacks-core:3.4.0.0.0`
+- **Hiro Sync** — on first install, automatically downloads and extracts the latest Hiro mainnet snapshot so your node is ready in minutes instead of days
 - **Init container** — renders `Config.toml` at startup from Umbrel's injected env vars
 - **Non-conflicting ports** — exposes `21443` (RPC) and `21444` (P2P) to avoid clashes with other community Stacks apps
 - **Healthcheck** — Umbrel can monitor node liveness via `/v2/info`

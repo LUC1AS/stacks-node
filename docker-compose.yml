@@ -15,18 +15,18 @@ services:
       sh -c "
         apk add --no-cache gettext &&
         if [ -d /stacks-blockchain/mainnet/chainstate ]; then
-          echo '[Quick Sync] Existing chainstate found. Skipping download.';
+          echo '[Hiro Sync] Existing chainstate found. Skipping download.';
         else
-          echo '[Quick Sync] No existing chainstate found. Downloading Hiro snapshot...';
+          echo '[Hiro Sync] No existing chainstate found. Downloading Hiro snapshot...';
           apk add --no-cache wget;
           SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.gz';
-          echo \"[Quick Sync] Downloading from \${SNAPSHOT_URL}\";
+          echo \"[Hiro Sync] Downloading from \${SNAPSHOT_URL}\";
           wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.gz \"\${SNAPSHOT_URL}\";
-          echo '[Quick Sync] Download complete. Extracting...';
-          tar -xzf /stacks-blockchain/snapshot.tar.gz -C /stacks-blockchain/ || { echo '[Quick Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.gz; exit 1; };
-          echo '[Quick Sync] Extraction complete. Cleaning up archive...';
+          echo '[Hiro Sync] Download complete. Extracting...';
+          tar -xzf /stacks-blockchain/snapshot.tar.gz -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.gz; exit 1; };
+          echo '[Hiro Sync] Extraction complete. Cleaning up archive...';
           rm /stacks-blockchain/snapshot.tar.gz;
-          echo '[Quick Sync] Quick Sync finished! Starting node...';
+          echo '[Hiro Sync] Hiro Sync finished! Starting node...';
         fi &&
         mkdir -p /config &&
         envsubst < /template/Config.toml.template > /config/Config.toml &&
@@ -37,7 +37,7 @@ services:
         ipv4_address: $APP_STACKS_NODE_INIT_IP
 
   app:
-    image: ghcr.io/stacks-network/stacks-core:3.3.0.0.5
+    image: ghcr.io/stacks-network/stacks-core:3.4.0.0.0
     restart: unless-stopped
     stop_grace_period: 1m
     depends_on:
