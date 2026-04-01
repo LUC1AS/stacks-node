@@ -3,7 +3,7 @@ manifestVersion: 1.1
 id: stacks-node
 category: bitcoin
 name: Stacks Node
-version: "3.3.0.0.5"
+version: "3.4.0.0.0"
 tagline: Run a Stacks mainnet node backed by your Umbrel Bitcoin node
 description: >-
   A clean, MIT-licensed Stacks mainnet follower node that reuses your
@@ -27,10 +27,10 @@ port: 21443
 gallery: []
 
 releaseNotes: >-
-  Initial release. Runs Stacks Core 3.3.0.0.5 (matches the Hiro snapshot
-  chainstate) using the official ghcr.io/stacks-network/stacks-core image.
-  Connects to your Umbrel Bitcoin node as the burnchain backend. Chainstate
-  from any 3.3.x.x.x release is compatible.
+  Upgraded to Stacks Core 3.4.0.0.0 (epoch 3.4 hard fork, activates at Bitcoin
+  block 943333, ~April 2 2026). This is a required upgrade — nodes below 3.4.x
+  will stop following the chain at activation. Chainstate from 3.3.x is fully
+  compatible; genesis sync only required if upgrading from 3.2.x or earlier.
 
 dependencies:
   - bitcoin
