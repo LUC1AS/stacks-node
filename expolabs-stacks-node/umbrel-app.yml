@@ -1,6 +1,6 @@
 manifestVersion: 1.1
 
-id: stacks-node
+id: expolabs-stacks-node
 category: bitcoin
 name: Stacks Node
 version: "3.4.0.0.0"

@@ -34,7 +34,7 @@ services:
       "
     networks:
       default:
-        ipv4_address: $APP_STACKS_NODE_INIT_IP
+        ipv4_address: $APP_EXPOLABS_STACKS_NODE_INIT_IP
 
   app:
     image: ghcr.io/stacks-network/stacks-core:3.4.0.0.0
@@ -55,7 +55,7 @@ services:
       RUST_BACKTRACE: "1"
     networks:
       default:
-        ipv4_address: $APP_STACKS_NODE_IP
+        ipv4_address: $APP_EXPOLABS_STACKS_NODE_IP
     healthcheck:
       test:
         [
