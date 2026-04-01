@@ -1,0 +1,38 @@
+manifestVersion: 1.1
+
+id: stacks-node
+category: bitcoin
+name: Stacks Node
+version: "3.3.0.0.5"
+tagline: Run a Stacks mainnet node backed by your Umbrel Bitcoin node
+description: >-
+  A clean, MIT-licensed Stacks mainnet follower node that reuses your
+  Umbrel Bitcoin node as the burnchain backend — no extra Bitcoin node
+  required. Built against upstream Stacks and Umbrel documentation for
+  a minimal, maintainable, and production-ready baseline.
+
+
+  Stacks is a Bitcoin layer for smart contracts and decentralised apps.
+  Running your own node gives you a trustless, self-sovereign view of
+  the Stacks chain, anchored directly to your own Bitcoin node.
+
+website: https://stacks.co
+support: https://github.com/LUC1AS/stacks-node/issues
+repo: https://github.com/LUC1AS/stacks-node
+submitter: LUC1AS
+submission: https://github.com/LUC1AS/stacks-node
+
+port: 21443
+
+gallery: []
+
+releaseNotes: >-
+  Initial release. Runs Stacks Core 3.3.0.0.5 (matches the Hiro snapshot
+  chainstate) using the official ghcr.io/stacks-network/stacks-core image.
+  Connects to your Umbrel Bitcoin node as the burnchain backend. Chainstate
+  from any 3.3.x.x.x release is compatible.
+
+dependencies:
+  - bitcoin
+
+developer: Hiro Systems / Stacks Foundation

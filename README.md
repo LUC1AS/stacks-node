@@ -1,8 +1,29 @@
-# Expolabs App Store for Umbrel
+# stacks-node
 
-A community app store for [UmbrelOS](https://umbrel.com), maintained by [Expolabs](https://github.com/LUC1AS).
+An Umbrel community app that runs a **Stacks mainnet follower node**, anchored to your own Umbrel Bitcoin node as the burnchain backend.
 
-## How to Install
+> **By [LUC1AS](https://github.com/LUC1AS)**
+
+## What is Stacks?
+
+[Stacks](https://stacks.co) is a Bitcoin layer for smart contracts and decentralised apps. Every Stacks block is anchored to a Bitcoin block, giving Stacks transactions Bitcoin-grade finality.
+
+## Features
+
+- **No extra Bitcoin node needed** — reuses your existing Umbrel Bitcoin app
+- **Official image** — `ghcr.io/stacks-network/stacks-core:3.3.0.0.5`
+- **Init container** — renders `Config.toml` at startup from Umbrel's injected env vars
+- **Non-conflicting ports** — exposes `21443` (RPC) and `21444` (P2P) to avoid clashes with other community Stacks apps
+- **Healthcheck** — Umbrel can monitor node liveness via `/v2/info`
+- **MIT licensed** — clean-room implementation
+
+## Requirements
+
+- [Umbrel](https://umbrel.com) with the **Bitcoin** app installed and fully synced
+
+## Installation
+
+### Via Umbrel App Store (community)
 
 1. Open your Umbrel dashboard
 2. Go to **App Store → Community App Stores**
@@ -10,41 +31,42 @@ A community app store for [UmbrelOS](https://umbrel.com), maintained by [Expolab
    ```
    https://github.com/LUC1AS/stacks-node
    ```
-4. Click **Add Store** — the Expolabs store will appear in your App Store
+4. Click **Add Store**, then install **Stacks Node**
 
-## Available Apps
+### Manual (non-Umbrel)
 
-### Stacks Clean Node
-
-A clean-room, MIT-licensed Stacks mainnet follower node that reuses your Umbrel Bitcoin node as the burnchain backend — no extra Bitcoin node required. Built from scratch against upstream Stacks and Umbrel documentation for a sleek, minimal, and maintainable baseline.
-
-- **Version:** 3.4.0.0.0
-- **Category:** Bitcoin
-- **Port:** 21443
-- **Requires:** Bitcoin node on Umbrel
-
-## Adding Assets
-
-### App Icon
-Place the app icon at:
+```bash
+cp .env.example .env
+# Edit .env with your Bitcoin node RPC credentials
+docker compose --env-file .env up -d
 ```
-expolabs-stacks-clean-node/icon.png
-```
-Requirements: **512×512 PNG** (transparent background recommended)
 
-### Gallery Screenshots
-Place screenshots at:
-```
-expolabs-stacks-clean-node/gallery/
-```
-Requirements: **1280×720 PNG** recommended
+## Ports
 
-## Links
+| Port  | Protocol | Description    |
+|-------|----------|----------------|
+| 21443 | TCP      | Stacks RPC API |
+| 21444 | TCP      | Stacks P2P     |
 
-- 📦 [stacks-clean-node dev repo](https://github.com/LUC1AS/stacks-clean-node) — staging / development source
-- 📖 [Stacks documentation](https://docs.stacks.co)
-- 🟣 [Umbrel Community App Store docs](https://github.com/getumbrel/umbrel-apps)
+## API
+
+Once running, the Stacks RPC API is available at:
+
+```
+http://<your-umbrel-ip>:21443/v2/info
+```
+
+Common endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/v2/info` | Node info, burn block height, stacks tip |
+| `/v2/accounts/<address>` | Account balance and nonce |
+| `/v2/transactions` | Broadcast signed transactions |
+| `/v2/fees/transfer` | Estimated fee for STX transfer |
+
+Full API reference: [docs.hiro.so/api](https://docs.hiro.so/api)
 
 ## License
 
-MIT © 2026 LUC1AS / Expolabs
+[MIT](LICENSE)

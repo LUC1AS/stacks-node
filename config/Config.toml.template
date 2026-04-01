@@ -1,0 +1,46 @@
+# Stacks mainnet follower node — Config.toml template
+#
+# This template is rendered at startup by the init container.
+# DO NOT edit Config.toml directly — edit this file instead.
+#
+# Variables substituted at render time:
+#   ${BURNCHAIN_PEER_HOST}  — bitcoind RPC hostname (from APP_BITCOIN_NODE_IP)
+#   ${BURNCHAIN_RPC_PORT}   — bitcoind RPC port (from APP_BITCOIN_RPC_PORT, default 8332)
+#   ${BURNCHAIN_RPC_USER}   — bitcoind RPC username (from APP_BITCOIN_RPC_USER)
+#   ${BURNCHAIN_RPC_PASS}   — bitcoind RPC password (from APP_BITCOIN_RPC_PASS)
+#
+# These values are injected by Umbrel automatically from the Bitcoin app.
+# For manual/non-Umbrel usage, set them in your .env file.
+
+[node]
+# Listen for RPC connections on all interfaces, port 20443 inside the container.
+# Host port 21443 maps to this (see docker-compose.yml).
+rpc_bind = "0.0.0.0:20443"
+
+# Listen for Stacks P2P connections on all interfaces, port 20444 inside the container.
+# Host port 21444 maps to this (see docker-compose.yml).
+p2p_bind = "0.0.0.0:20444"
+
+# Where to store chain data inside the container.
+working_dir = "/stacks-blockchain"
+
+# Bootstrap node — official Hiro seed node.
+bootstrap_node = "02196f005965cebe6ddc3901b7b1cc1aa7a88f305bb8c5893456b8f9a605923893@seed.mainnet.hiro.so:20444"
+
+[burnchain]
+chain = "bitcoin"
+mode = "mainnet"
+
+# Umbrel's Bitcoin node RPC endpoint (injected via environment variables).
+peer_host = "${BURNCHAIN_PEER_HOST}"
+rpc_port = ${BURNCHAIN_RPC_PORT}
+username = "${BURNCHAIN_RPC_USER}"
+password = "${BURNCHAIN_RPC_PASS}"
+
+rpc_ssl = false
+
+# Bitcoin P2P port (used only for peer discovery; not for RPC).
+peer_port = 8333
+
+# Timeouts — generous defaults to handle slow RPC responses on busy nodes.
+timeout = 300
