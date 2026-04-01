@@ -21,14 +21,14 @@ services:
           echo '[Hiro Sync] Existing chainstate found. Skipping download.'
         else
           echo '[Hiro Sync] No existing chainstate found. Downloading Hiro snapshot...'
-          apk add --no-cache wget
-          SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.gz'
+          apk add --no-cache wget zstd
+          SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.zst'
           echo "[Hiro Sync] Downloading from $$SNAPSHOT_URL"
-          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.gz "$$SNAPSHOT_URL"
+          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.zst "$$SNAPSHOT_URL"
           echo '[Hiro Sync] Download complete. Extracting...'
-          tar -xzf /stacks-blockchain/snapshot.tar.gz -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.gz; exit 1; }
+          tar --use-compress-program=unzstd -xf /stacks-blockchain/snapshot.tar.zst -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.zst; exit 1; }
           echo '[Hiro Sync] Extraction complete. Cleaning up archive...'
-          rm /stacks-blockchain/snapshot.tar.gz
+          rm /stacks-blockchain/snapshot.tar.zst
           echo '[Hiro Sync] Hiro Sync finished! Starting node...'
         fi
         mkdir -p /config
