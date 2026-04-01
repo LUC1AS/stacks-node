@@ -5,6 +5,7 @@ services:
     volumes:
       - "${APP_DATA_DIR}/config:/config"
       - "./config/Config.toml.template:/template/Config.toml.template:ro"
+      - "${APP_DATA_DIR}/data/stacks-blockchain:/stacks-blockchain"
     environment:
       BURNCHAIN_PEER_HOST: "${APP_BITCOIN_NODE_IP}"
       BURNCHAIN_RPC_PORT: "${APP_BITCOIN_RPC_PORT:-8332}"
@@ -13,6 +14,20 @@ services:
     command: >
       sh -c "
         apk add --no-cache gettext &&
+        if [ -d /stacks-blockchain/mainnet/chainstate ]; then
+          echo '[Quick Sync] Existing chainstate found. Skipping download.';
+        else
+          echo '[Quick Sync] No existing chainstate found. Downloading Hiro snapshot...';
+          apk add --no-cache wget;
+          SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.gz';
+          echo \"[Quick Sync] Downloading from \${SNAPSHOT_URL}\";
+          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.gz \"\${SNAPSHOT_URL}\";
+          echo '[Quick Sync] Download complete. Extracting...';
+          tar -xzf /stacks-blockchain/snapshot.tar.gz -C /stacks-blockchain/ || { echo '[Quick Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.gz; exit 1; };
+          echo '[Quick Sync] Extraction complete. Cleaning up archive...';
+          rm /stacks-blockchain/snapshot.tar.gz;
+          echo '[Quick Sync] Quick Sync finished! Starting node...';
+        fi &&
         mkdir -p /config &&
         envsubst < /template/Config.toml.template > /config/Config.toml &&
         echo 'Config rendered successfully.'
@@ -29,7 +44,7 @@ services:
       init:
         condition: service_completed_successfully
     volumes:
-      - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
+      - "${APP_DATA_DIR}/data/stacks-blockchain:/stacks-blockchain"
       - "${APP_DATA_DIR}/config/Config.toml:/src/stacks-node/Config.toml:ro"
     ports:
       # 21443/21444 are used instead of the default 20443/20444 to avoid
