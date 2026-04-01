@@ -5,7 +5,7 @@ services:
     volumes:
       - "${APP_DATA_DIR}/config:/config"
       - "./config/Config.toml.template:/template/Config.toml.template:ro"
-      - "${APP_DATA_DIR}/data/stacks-blockchain:/stacks-blockchain"
+      - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
     environment:
       BURNCHAIN_PEER_HOST: "${APP_BITCOIN_NODE_IP}"
       BURNCHAIN_RPC_PORT: "${APP_BITCOIN_RPC_PORT:-8332}"
@@ -44,7 +44,7 @@ services:
       init:
         condition: service_completed_successfully
     volumes:
-      - "${APP_DATA_DIR}/data/stacks-blockchain:/stacks-blockchain"
+      - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
       - "${APP_DATA_DIR}/config/Config.toml:/src/stacks-node/Config.toml:ro"
     ports:
       # 21443/21444 are used instead of the default 20443/20444 to avoid
