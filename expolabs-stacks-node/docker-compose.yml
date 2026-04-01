@@ -11,27 +11,29 @@ services:
       BURNCHAIN_RPC_PORT: "${APP_BITCOIN_RPC_PORT:-8332}"
       BURNCHAIN_RPC_USER: "${APP_BITCOIN_RPC_USER}"
       BURNCHAIN_RPC_PASS: "${APP_BITCOIN_RPC_PASS}"
-    command: >
-      sh -c "
-        apk add --no-cache gettext &&
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        apk add --no-cache gettext
         if [ -d /stacks-blockchain/mainnet/chainstate ]; then
-          echo '[Hiro Sync] Existing chainstate found. Skipping download.';
+          echo '[Hiro Sync] Existing chainstate found. Skipping download.'
         else
-          echo '[Hiro Sync] No existing chainstate found. Downloading Hiro snapshot...';
-          apk add --no-cache wget;
-          SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.gz';
-          echo \"[Hiro Sync] Downloading from \${SNAPSHOT_URL}\";
-          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.gz \"\${SNAPSHOT_URL}\";
-          echo '[Hiro Sync] Download complete. Extracting...';
-          tar -xzf /stacks-blockchain/snapshot.tar.gz -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.gz; exit 1; };
-          echo '[Hiro Sync] Extraction complete. Cleaning up archive...';
-          rm /stacks-blockchain/snapshot.tar.gz;
-          echo '[Hiro Sync] Hiro Sync finished! Starting node...';
-        fi &&
-        mkdir -p /config &&
-        envsubst < /template/Config.toml.template > /config/Config.toml &&
+          echo '[Hiro Sync] No existing chainstate found. Downloading Hiro snapshot...'
+          apk add --no-cache wget
+          SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.gz'
+          echo "[Hiro Sync] Downloading from $SNAPSHOT_URL"
+          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.gz "$SNAPSHOT_URL"
+          echo '[Hiro Sync] Download complete. Extracting...'
+          tar -xzf /stacks-blockchain/snapshot.tar.gz -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.gz; exit 1; }
+          echo '[Hiro Sync] Extraction complete. Cleaning up archive...'
+          rm /stacks-blockchain/snapshot.tar.gz
+          echo '[Hiro Sync] Hiro Sync finished! Starting node...'
+        fi
+        mkdir -p /config
+        envsubst < /template/Config.toml.template > /config/Config.toml
         echo 'Config rendered successfully.'
-      "
     networks:
       default:
         ipv4_address: $APP_EXPOLABS_STACKS_NODE_INIT_IP
