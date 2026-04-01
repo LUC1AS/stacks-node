@@ -26,7 +26,7 @@ services:
           echo "[Hiro Sync] Downloading from $$SNAPSHOT_URL"
           wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.zst "$$SNAPSHOT_URL"
           echo '[Hiro Sync] Download complete. Extracting...'
-          tar --use-compress-program=unzstd -xf /stacks-blockchain/snapshot.tar.zst -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.zst; exit 1; }
+          zstd -dc /stacks-blockchain/snapshot.tar.zst | tar -xf - -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.zst; exit 1; }
           echo '[Hiro Sync] Extraction complete. Cleaning up archive...'
           rm /stacks-blockchain/snapshot.tar.zst
           echo '[Hiro Sync] Hiro Sync finished! Starting node...'
