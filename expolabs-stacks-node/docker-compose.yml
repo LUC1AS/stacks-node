@@ -4,7 +4,6 @@ services:
     restart: "no"
     volumes:
       - "${APP_DATA_DIR}/config:/config"
-      - "./config/Config.toml.template:/template/Config.toml.template:ro"
       - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
     environment:
       BURNCHAIN_PEER_HOST: "${APP_BITCOIN_NODE_IP}"
@@ -32,7 +31,24 @@ services:
           echo '[Hiro Sync] Hiro Sync finished! Starting node...'
         fi
         mkdir -p /config
-        envsubst < /template/Config.toml.template > /config/Config.toml
+        cat <<'TMPL' | envsubst > /config/Config.toml
+[node]
+rpc_bind = "0.0.0.0:20443"
+p2p_bind = "0.0.0.0:20444"
+working_dir = "/stacks-blockchain"
+bootstrap_node = "02196f005965cebe6ddc3901b7b1cc1aa7a88f305bb8c5893456b8f9a605923893@seed.mainnet.hiro.so:20444"
+
+[burnchain]
+chain = "bitcoin"
+mode = "mainnet"
+peer_host = "${BURNCHAIN_PEER_HOST}"
+rpc_port = ${BURNCHAIN_RPC_PORT}
+username = "${BURNCHAIN_RPC_USER}"
+password = "${BURNCHAIN_RPC_PASS}"
+rpc_ssl = false
+peer_port = 8333
+timeout = 300
+TMPL
         echo 'Config rendered successfully.'
     networks:
       default:
