@@ -1,7 +1,7 @@
 services:
   init:
     image: alpine:3.20
-    restart: "no"
+    restart: on-failure
     volumes:
       - "${APP_DATA_DIR}/config:/config"
       - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
@@ -63,7 +63,7 @@ TMPL
         condition: service_completed_successfully
     volumes:
       - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
-      - "${APP_DATA_DIR}/config/Config.toml:/src/stacks-node/Config.toml:ro"
+      - "${APP_DATA_DIR}/config:/src/stacks-node/config:ro"
     ports:
       # 21443/21444 are used instead of the default 20443/20444 to avoid
       # conflicts with any existing community Stacks app on the same device.
@@ -86,7 +86,7 @@ TMPL
       timeout: 10s
       retries: 5
       start_period: 60s
-    command: stacks-node start --config /src/stacks-node/Config.toml
+    command: stacks-node start --config /src/stacks-node/config/Config.toml
 
 networks:
   default:
