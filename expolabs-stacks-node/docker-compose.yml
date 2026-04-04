@@ -80,8 +80,7 @@ services:
           "password = \"$$BURNCHAIN_RPC_PASS\"" \
           'rpc_ssl = false' \
           'peer_port = 8333' \
-          'timeout = 300' \
-          > /config/Config.toml
+          'timeout = 300' > /config/Config.toml
 
         echo '[Config] Config.toml generated successfully.'
         echo "[Config] Bitcoin RPC: $$BURNCHAIN_PEER_HOST:$${BURNCHAIN_RPC_PORT:-8332}"
