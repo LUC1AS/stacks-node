@@ -16,18 +16,19 @@ services:
       - |
         set -e
         apk add --no-cache gettext
-        if [ -d /stacks-blockchain/mainnet/chainstate ]; then
+        rm -f /stacks-blockchain/snapshot.tar.zst
+        if [ -f /stacks-blockchain/mainnet/chainstate/vm/index.sqlite ]; then
           echo '[Hiro Sync] Existing chainstate found. Skipping download.'
         else
-          echo '[Hiro Sync] No existing chainstate found. Downloading Hiro snapshot...'
+          echo '[Hiro Sync] No complete chainstate found. Downloading Hiro snapshot...'
           apk add --no-cache wget zstd
           SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.zst'
-          echo "[Hiro Sync] Downloading from $$SNAPSHOT_URL"
-          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.zst "$$SNAPSHOT_URL"
-          echo '[Hiro Sync] Download complete. Extracting...'
-          zstd -dc /stacks-blockchain/snapshot.tar.zst | tar -xf - -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.zst; exit 1; }
-          echo '[Hiro Sync] Extraction complete. Cleaning up archive...'
-          rm /stacks-blockchain/snapshot.tar.zst
+          echo "[Hiro Sync] Streaming from $$SNAPSHOT_URL"
+          wget --progress=dot:giga -O- "$$SNAPSHOT_URL" | zstd -dc | tar -xf - -C /stacks-blockchain/ || {
+            echo '[Hiro Sync] Extraction failed. Cleaning up partial data...'
+            rm -rf /stacks-blockchain/mainnet
+            exit 1
+          }
           echo '[Hiro Sync] Hiro Sync finished! Starting node...'
         fi
         mkdir -p /config
