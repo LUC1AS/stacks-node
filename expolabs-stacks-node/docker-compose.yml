@@ -15,6 +15,7 @@ services:
       - -c
       - |
         set -e
+        set -o pipefail
 
         MARKER="/stacks-blockchain/.extraction_complete"
         CHAINSTATE_DB="/stacks-blockchain/mainnet/chainstate/vm/index.sqlite"
@@ -23,8 +24,12 @@ services:
         # Check if we have a complete chainstate (marker + actual DB file)
         if [ -f "$$MARKER" ] && [ -f "$$CHAINSTATE_DB" ]; then
           echo '[Hiro Sync] Existing chainstate found. Skipping download.'
+        elif [ -f "$$CHAINSTATE_DB" ]; then
+          # DB exists but marker is missing — treat as complete and re-create marker
+          echo '[Hiro Sync] Chainstate found without completion marker. Re-creating marker.'
+          touch "$$MARKER"
         else
-          # Clean up any partial extraction from a previous failed attempt
+          # No valid chainstate — clean up any partial extraction and re-download
           if [ -d /stacks-blockchain/mainnet ]; then
             echo '[Hiro Sync] Incomplete chainstate detected. Cleaning up...'
             rm -rf /stacks-blockchain/mainnet
@@ -37,6 +42,7 @@ services:
 
           # Stream directly: download | decompress | extract
           # No archive file is saved to disk — this halves the disk space requirement
+          # set -o pipefail ensures any failure in the pipeline is caught
           wget -qO- "$$SNAPSHOT_URL" | zstd -dc | tar -xf - -C /stacks-blockchain/
 
           if [ -f "$$CHAINSTATE_DB" ]; then
@@ -50,6 +56,7 @@ services:
         fi
 
         # Generate Config.toml — validate required variables first
+        # BURNCHAIN_RPC_PORT is optional and defaults to 8332 if unset
         if [ -z "$$BURNCHAIN_PEER_HOST" ] || [ -z "$$BURNCHAIN_RPC_USER" ] || [ -z "$$BURNCHAIN_RPC_PASS" ]; then
           echo '[Config] ERROR: Bitcoin connection variables are not set.'
           echo '[Config] BURNCHAIN_PEER_HOST, BURNCHAIN_RPC_USER, and BURNCHAIN_RPC_PASS are required.'
