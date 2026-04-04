@@ -1,7 +1,7 @@
 services:
   init:
     image: alpine:3.20
-    restart: on-failure
+    restart: "no"
     volumes:
       - "${APP_DATA_DIR}/config:/config"
       - "${APP_DATA_DIR}/data/stacks-node:/stacks-blockchain"
@@ -15,40 +15,69 @@ services:
       - -c
       - |
         set -e
-        apk add --no-cache gettext
-        if [ -d /stacks-blockchain/mainnet/chainstate ]; then
+
+        MARKER="/stacks-blockchain/.extraction_complete"
+        CHAINSTATE_DB="/stacks-blockchain/mainnet/chainstate/vm/index.sqlite"
+        SNAPSHOT_URL="https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.zst"
+
+        # Check if we have a complete chainstate (marker + actual DB file)
+        if [ -f "$$MARKER" ] && [ -f "$$CHAINSTATE_DB" ]; then
           echo '[Hiro Sync] Existing chainstate found. Skipping download.'
         else
-          echo '[Hiro Sync] No existing chainstate found. Downloading Hiro snapshot...'
+          # Clean up any partial extraction from a previous failed attempt
+          if [ -d /stacks-blockchain/mainnet ]; then
+            echo '[Hiro Sync] Incomplete chainstate detected. Cleaning up...'
+            rm -rf /stacks-blockchain/mainnet
+          fi
+          rm -f "$$MARKER"
+
+          echo '[Hiro Sync] Downloading and extracting Hiro snapshot (streaming)...'
           apk add --no-cache wget zstd
-          SNAPSHOT_URL='https://archive.hiro.so/mainnet/stacks-blockchain/mainnet-stacks-blockchain-latest.tar.zst'
-          echo "[Hiro Sync] Downloading from $$SNAPSHOT_URL"
-          wget -c --progress=dot:giga -O /stacks-blockchain/snapshot.tar.zst "$$SNAPSHOT_URL"
-          echo '[Hiro Sync] Download complete. Extracting...'
-          zstd -dc /stacks-blockchain/snapshot.tar.zst | tar -xf - -C /stacks-blockchain/ || { echo '[Hiro Sync] Extraction failed. Removing partial archive.'; rm -f /stacks-blockchain/snapshot.tar.zst; exit 1; }
-          echo '[Hiro Sync] Extraction complete. Cleaning up archive...'
-          rm /stacks-blockchain/snapshot.tar.zst
-          echo '[Hiro Sync] Hiro Sync finished! Starting node...'
+          echo "[Hiro Sync] Source: $$SNAPSHOT_URL"
+
+          # Stream directly: download | decompress | extract
+          # No archive file is saved to disk — this halves the disk space requirement
+          wget -qO- "$$SNAPSHOT_URL" | zstd -dc | tar -xf - -C /stacks-blockchain/
+
+          if [ -f "$$CHAINSTATE_DB" ]; then
+            touch "$$MARKER"
+            echo '[Hiro Sync] Extraction complete!'
+          else
+            echo '[Hiro Sync] ERROR: Extraction finished but chainstate DB not found. Cleaning up.'
+            rm -rf /stacks-blockchain/mainnet
+            exit 1
+          fi
         fi
+
+        # Generate Config.toml — validate required variables first
+        if [ -z "$$BURNCHAIN_PEER_HOST" ] || [ -z "$$BURNCHAIN_RPC_USER" ] || [ -z "$$BURNCHAIN_RPC_PASS" ]; then
+          echo '[Config] ERROR: Bitcoin connection variables are not set.'
+          echo '[Config] BURNCHAIN_PEER_HOST, BURNCHAIN_RPC_USER, and BURNCHAIN_RPC_PASS are required.'
+          exit 1
+        fi
+
         mkdir -p /config
-        printf '%s\n' \
-          '[node]' \
-          'rpc_bind = "0.0.0.0:20443"' \
-          'p2p_bind = "0.0.0.0:20444"' \
-          'working_dir = "/stacks-blockchain"' \
-          'bootstrap_node = "02196f005965cebe6ddc3901b7b1cc1aa7a88f305bb8c5893456b8f9a605923893@seed.mainnet.hiro.so:20444"' \
-          '' \
-          '[burnchain]' \
-          'chain = "bitcoin"' \
-          'mode = "mainnet"' \
-          'peer_host = "${BURNCHAIN_PEER_HOST}"' \
-          'rpc_port = ${BURNCHAIN_RPC_PORT}' \
-          'username = "${BURNCHAIN_RPC_USER}"' \
-          'password = "${BURNCHAIN_RPC_PASS}"' \
-          'rpc_ssl = false' \
-          'peer_port = 8333' \
-          'timeout = 300' | envsubst > /config/Config.toml
-        echo 'Config rendered successfully.'
+        cat > /config/Config.toml <<EOF
+[node]
+rpc_bind = "0.0.0.0:20443"
+p2p_bind = "0.0.0.0:20444"
+working_dir = "/stacks-blockchain"
+bootstrap_node = "02196f005965cebe6ddc3901b7b1cc1aa7a88f305bb8c5893456b8f9a605923893@seed.mainnet.hiro.so:20444"
+
+[burnchain]
+chain = "bitcoin"
+mode = "mainnet"
+peer_host = "$$BURNCHAIN_PEER_HOST"
+rpc_port = $${BURNCHAIN_RPC_PORT:-8332}
+username = "$$BURNCHAIN_RPC_USER"
+password = "$$BURNCHAIN_RPC_PASS"
+rpc_ssl = false
+peer_port = 8333
+timeout = 300
+EOF
+
+        echo '[Config] Config.toml generated successfully.'
+        echo "[Config] Bitcoin RPC: $$BURNCHAIN_PEER_HOST:$${BURNCHAIN_RPC_PORT:-8332}"
     networks:
       default:
         ipv4_address: $APP_EXPOLABS_STACKS_NODE_INIT_IP
